@@ -10,6 +10,8 @@ use perceptron::Perceptron;
 mod vec2;
 use vec2::Vec2;
 
+use rand::prelude::*;
+
 const WINDOW_WIDTH: u32 = 800;
 const WINDOW_HEIGHT: u32 = 600;
 const rocket_velocity_multiplier: f64 = 0.5;
@@ -20,27 +22,52 @@ const rocket_ptron_shape: Vec<usize> = vec!(8, 8, 8, 2);
 const rocket_radius: f32 = 40.0;
 const rocket_point_count: u32 = 50;
 
-
+#[derive(Clone)]
 pub struct Rocket{
     pub pos: Vec2,
     vel: Vec2,
     ptron: Perceptron,
-    circle: ffi::sfCircleShape
 }
 
-impl Rocket<'a> {
+impl Rocket{
     pub fn create() -> Rocket {
         return Rocket{pos: rocket_start_position,
                       vel: Vec2{x:0.0, y:0.0},
                       ptron: Perceptron::create(rocket_ptron_shape),
-                      circle: CircleShape::new(rocket_radius, rocket_point_count);
         }.clone();
     }
+    pub fn create_from_parent(parent: &Rocket, enableVariation: bool) -> Rocket {
+        if !enableVariation {
+            return Rocket{
+                pos: rocket_start_position,
+                vel: Vec2{x: 0.0, y: 0.0},
+                ptron: parent.ptron.clone()
+            };
+        }
+        else {
+            let mut temp = Rocket{
+                pos: rocket_start_position,
+                vel: Vec2{x:0.0, y:0.0},
+                ptron: parent.ptron.clone();
+            };
+            let mut temp_wts = temp.ptron.get_wts();
+            for (index, &mut wt) in temp_wts.iter_mut().enumerate() {
+                for i in 0..wt.rows() {
+                    for j in 0..wt.cols() {
+                        wt.set(i, j, wt.get(i, j) + rand::rand::gen::<f64>() * 10.0 - 5.0);
+                    }
+                }
+            }
+            temp.ptron.set_wts(temp_wts);
+            return temp;
+
+        }
+    }
     pub fn update(&mut self) {
-        
-    } //#TODO include obstacle reference and target reference
+    }
     pub fn draw(&self, window: &RenderWindow) {
-        CircleShape::new(rocket_radius, rocket_point_count);
+        let circle = CircleShape::new(rocket_radius, rocket_point_count);
+        window.draw(&circle);
     }
 }
 

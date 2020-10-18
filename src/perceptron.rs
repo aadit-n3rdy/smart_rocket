@@ -25,6 +25,12 @@ impl Perceptron {
         }
         return ptron;
     }
+    pub fn get_wts(&self) -> Vec<Matrix> {
+        return self.wts.clone();
+    }
+    pub fn set_wts(&mut self, new_wts: Vec<Matrix>) {
+        self.wts = new_wts;
+    }
 
     pub fn calculate(&self, input: &Matrix) -> Matrix {
         let mut temp: Matrix = input.clone();
