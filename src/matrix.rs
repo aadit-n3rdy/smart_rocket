@@ -2,7 +2,7 @@ extern crate rand;
 
 use rand::Rng;
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct Matrix {
     raw: Vec<f64>,
     rows: usize,

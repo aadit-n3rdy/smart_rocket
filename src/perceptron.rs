@@ -4,7 +4,7 @@ fn activate(inp: f64) -> f64 {
     return 2.0 / (1.0 + (1.0 / inp.exp())) + 1.0;
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct Perceptron {
     wts: Vec<Matrix>,
     shape: Vec<usize>,
