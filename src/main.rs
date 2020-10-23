@@ -20,7 +20,6 @@ const rocket_velocity_multiplier: f64 = 0.5;
 const rocket_accel_multiplier: f64 = 20.0;
 const rocket_velocity_decay_rate: f64 = 0.9;
 const rocket_start_position: Vec2 = Vec2{x: 0.0, y: WINDOW_HEIGHT as f64/2.0};
-static rocket_ptron_shape: Vec<usize> = vec![8, 8, 8, 2];
 const rocket_radius: f32 = 40.0;
 const rocket_point_count: u32 = 50;
 
@@ -36,7 +35,7 @@ impl Rocket{
     pub fn create() -> Rocket {
         return Rocket{pos: rocket_start_position,
                       vel: Vec2{x:0.0, y:0.0},
-                      ptron: Perceptron::create(rocket_ptron_shape.clone()),
+                      ptron: Perceptron::create(vec!(8, 8, 8, 2)),
         }.clone();
     }
     pub fn create_from_parent(parent: &Rocket, enable_variation: bool) -> Rocket {
@@ -58,7 +57,8 @@ impl Rocket{
             for k in 0..temp_wts.len() {
                 for i in 0..temp_wts[k].rows() {
                     for j in 0..temp_wts[k].cols() {
-                        temp_wts[k].set(i, j, temp_wts[k].get(i, j) + rng.gen::<f64>() * 10.0 - 5.0);
+                        let cur = temp_wts[k].get(i, j);
+                        temp_wts[k].set(i, j, cur + rng.gen::<f64>() * 10.0 - 5.0);
                     }
                 }
             }
@@ -68,12 +68,32 @@ impl Rocket{
         }
     }
     pub fn update(&mut self) {
+        let inp = Matrix::create_init(8, 1, vec!(
+                self.pos.x,
+                self.pos.y,
+                self.vel.x,
+                self.vel.y,
+                0.0f64, //TODO TARGET POSITION
+                0.0f64,
+                0.0f64, //TODO OBSTACLE POSITION
+                0.0f64                
+                ));
+        let accel_matrix = self.ptron.calculate(&inp);
+        let mut accel = Vector2{x: accel_matrix.get(0, 0),
+            y: accel_matrix.get(0, 1)};
+        accel = accel * rocket_accel_multiplier;
+        self.vel.x += accel.x;
+        self.vel.y += accel.y;
+        self.vel = self.vel * rocket_velocity_multiplier * rocket_velocity_decay_rate;
+        self.pos.x += self.vel.x;
+        self.pos.y += self.vel.y;
     }
-    pub fn draw(&self, window: &RenderWindow) {
+    pub fn draw(&self, mut window: RenderWindow) {
         let circle = CircleShape::new(rocket_radius, rocket_point_count);
         window.draw(&circle);
     }
 }
+
 
 fn main() {
     let mut window = RenderWindow::new((800, 600),
