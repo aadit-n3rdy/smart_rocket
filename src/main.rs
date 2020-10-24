@@ -14,14 +14,8 @@ use sfml::system::Vector2;
 
 use rand::prelude::*;
 
-const WINDOW_WIDTH: u32 = 800;
-const WINDOW_HEIGHT: u32 = 600;
-const rocket_velocity_multiplier: f64 = 0.5;
-const rocket_accel_multiplier: f64 = 20.0;
-const rocket_velocity_decay_rate: f64 = 0.9;
-const rocket_start_position: Vec2 = Vec2{x: 0.0, y: WINDOW_HEIGHT as f64/2.0};
-const rocket_radius: f32 = 40.0;
-const rocket_point_count: u32 = 50;
+mod constants;
+use constants::*;
 
 #[derive(Debug, Clone)]
 pub struct Rocket{
@@ -88,9 +82,10 @@ impl Rocket{
         self.pos.x += self.vel.x;
         self.pos.y += self.vel.y;
     }
-    pub fn draw(&self, mut window: RenderWindow) {
+    pub fn draw(&self, mut window: RenderWindow)->RenderWindow {
         let circle = CircleShape::new(rocket_radius, rocket_point_count);
         window.draw(&circle);
+        return window;
     }
 }
 
@@ -100,6 +95,7 @@ fn main() {
                                  "Hello World",
                                  Style::CLOSE,
                                        &Default::default());
+    let mut rocket = Rocket::create();
     let mut circle : CircleShape = CircleShape::default();
     while window.is_open() {
         while let Some(event) = window.poll_event() {
@@ -107,12 +103,9 @@ fn main() {
                 window.close();
             }
         }
-        let v1 = Vector2::<f32>::from((10.0, 10.0));
         window.clear(Color::GREEN);
-        circle.set_position(Vector2::<f32>::from((10.0, 10.0)));
-        circle.set_fill_color(sfml::graphics::Color::RED);
-        circle.set_radius(10.0);
-        window.draw(&circle);
+        window = rocket.draw(window);
+        rocket.update();
         window.display();
     }
 }
